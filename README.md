@@ -71,12 +71,13 @@ merge **fails closed**: no status posted ⇒ the PR parks.
 status on at least one PR *before* adding it to required contexts — otherwise
 every PR blocks forever waiting for a status nothing produces.
 
-### Caveat: the merge step and unprotected repos
+### Protected vs unprotected repos
 
-`codex-pr-review` ends with `gh pr merge --auto --squash`, which is correct on a
-**protected** repo (GitHub waits for required checks). On an **unprotected**
-repo, `--auto` merges *immediately* (nothing to wait for) — so there, review
-with the skill but merge by polling CI yourself instead of using `--auto`.
+The skill's final merge step is **protection-state-aware**: on a **protected**
+repo it uses `gh pr merge --auto --squash` (GitHub waits for required checks);
+on an **unprotected** repo it does *not* use `--auto` (which would merge
+immediately, before CI) and instead polls CI then merges by hand. So the Codex
+review runs everywhere, but the merge mechanic adapts to the repo.
 
 ## Trust model
 

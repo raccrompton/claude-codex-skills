@@ -47,12 +47,18 @@ a `codex-review` commit status, so the merge can gate on it. Repo-agnostic:
    gh pr comment <n> --body "Codex review: <N> blocking issue(s):<list>"
    ```
 
-6. **Proceed to merge** (only after success):
-   ```sh
-   gh pr merge --auto --squash
-   ```
-   GitHub gates on the repo's required checks (which include `codex-review`
-   where enforced) and merges when all are green.
+6. **Proceed to merge** (only after success). Pick the merge command by whether
+   the repo has branch protection with required checks — check once:
+   `gh api "repos/{owner}/{repo}/branches/$BASE/protection"` (a 404 means
+   unprotected).
+   - **Protected** (required checks exist): `gh pr merge --auto --squash`.
+     GitHub waits for the required checks — which include `codex-review` where
+     enforced — and merges when all are green. Fire-and-forget; survives the
+     agent exiting.
+   - **Unprotected** (no required checks): do **NOT** use `--auto` — with
+     nothing to wait for it merges *immediately*, before CI runs. Poll the CI
+     runs (`gh run list --branch <branch>` + `gh run view <id> --json
+     conclusion`) and merge by hand once green: `gh pr merge --squash`.
 
 ## Rules
 - **Threshold:** only P1/P2 (correctness/security) block. Nits go in the comment.
